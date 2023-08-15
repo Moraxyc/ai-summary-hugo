@@ -2,7 +2,7 @@
 Author: Moraxyc me@morax.icu
 Date: 2023-08-16 00:40:10
 LastEditors: Moraxyc me@morax.icu
-LastEditTime: 2023-08-16 03:40:50
+LastEditTime: 2023-08-16 04:41:22
 FilePath: /ai-summary-hugo/main.py
 Description: 
 
@@ -25,13 +25,18 @@ def main():
         if data_process.check_slug_exists(slug):
             json_data = data_process.get_json_by_slug(slug)
             if not json_data['generated']:
+                print("Generating summary for" + post['title'])
                 summary_content = generate_summary(post.content)
                 return_status = True if summary_content else False
                 data_process.edit_json_by_slug(slug, summary_content, return_status)
                 data_process.save_json()
+            else:
+                print("All summmaries have been generated! Exit...")
         else:
+            print("Generating summary for" + post['title'])
             summary_content = generate_summary(post.content)
             return_status = True if summary_content else False
+            if not return_status:print("Failed to generate summary for" + post['title'])
             new_summary = {
                 "title": post['title'],
                 "slug": slug,
