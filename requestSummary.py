@@ -2,7 +2,7 @@
 Author: Moraxyc me@morax.icu
 Date: 2023-08-16 02:32:59
 LastEditors: Moraxyc me@morax.icu
-LastEditTime: 2023-08-16 03:13:45
+LastEditTime: 2023-08-16 03:38:03
 FilePath: /ai-summary-hugo/requestSummary.py
 Description: 
 
@@ -12,13 +12,18 @@ import openai
 import os
 
 def generate_summary(prompt):
-    api_key = os.environ["OPENAI_API_KEY"]
-    openai.api_key = api_key
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "请用中文, 100 字总结以下的核心内容："},
-            {"role": "user", "content": prompt}
-        ]
-    )
-    return response.get("choices")[0]["message"]["content"]
+    try:
+        api_key = os.environ.get("OPENAI_API_KEY")
+        openai.api_key = api_key
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo-16k",
+            messages=[
+                {"role": "system", "content": "请在100字内用中文总结以下文章的核心内容: "},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        return response.choices[0].message.content
+    except openai.error.OpenAIError as e:
+        print("OpenAI Error:", e)
+        return None
+

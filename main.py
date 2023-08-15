@@ -2,7 +2,7 @@
 Author: Moraxyc me@morax.icu
 Date: 2023-08-16 00:40:10
 LastEditors: Moraxyc me@morax.icu
-LastEditTime: 2023-08-16 03:11:02
+LastEditTime: 2023-08-16 03:40:50
 FilePath: /ai-summary-hugo/main.py
 Description: 
 
@@ -14,41 +14,43 @@ import frontmatter
 from dataProcess import dataProcess
 from requestSummary import generate_summary
 
-if __name__ != '__main__':
-    print("请直接输入\"python main.py\"运行")
+def main():
+    data_process = dataProcess("../data/summary/summary.json")
+    posts_path = get_posts_path()
+
+    for post_path in posts_path:
+        post = frontmatter.load(post_path)
+        slug = post['slug']
+
+        if data_process.check_slug_exists(slug):
+            json_data = data_process.get_json_by_slug(slug)
+            if not json_data['generated']:
+                summary_content = generate_summary(post.content)
+                return_status = True if summary_content else False
+                data_process.edit_json_by_slug(slug, summary_content, return_status)
+                data_process.save_json()
+        else:
+            summary_content = generate_summary(post.content)
+            return_status = True if summary_content else False
+            new_summary = {
+                "title": post['title'],
+                "slug": slug,
+                "generated": return_status,
+                "summary": summary_content
+            }
+            data_process.add_new_summary(new_summary)
+            data_process.save_json()
+
     sys.exit(0)
 
-def getPostsPath():
+def get_posts_path():
     paths = []
-    for root, _, files in os.walk("./content/posts"):
+    for root, _, files in os.walk("../content/posts"):
         for file in files:
             if file.endswith(".md"):
                 file_path = os.path.join(root, file)
                 paths.append(file_path)
     return paths
 
-data_process = dataProcess("./data/summary/summary.json")
-
-path = iter(getPostsPath())
-while True:
-    try:
-        post = frontmatter.load(next(path))
-        if data_process.check_slug_exists(post['slug']):
-            json_data = data_process.get_json_by_slug(post['slug'])
-            if not json_data['generated']:
-                data_process.edit_json_by_slug(post['slug'], generate_summary(post.content), True)
-                data_process.save_json()
-        else:
-            summary_content = generate_summary(post.content)
-            new_summary = {
-                "title": post['title'],
-                "slug": post['slug'],
-                "generated": True,
-                "summary": summary_content
-            }
-            data_process.add_new_summary(new_summary)
-            data_process.save_json()
-    except StopIteration:
-        break
-
-sys.exit(0)
+if __name__ == '__main__':
+    main()
