@@ -2,8 +2,8 @@
 Author: Moraxyc me@morax.icu
 Date: 2023-08-16 00:40:10
 LastEditors: Moraxyc me@morax.icu
-LastEditTime: 2023-08-16 11:50:15
-FilePath: /ai-summary-hugo/main.py
+LastEditTime: 2023-08-16 12:01:11
+FilePath: /blog-hugo/ai-summary-hugo/main.py
 Description: 脚本运行入口
 
 Copyright (c) 2023 by Moraxyc, All Rights Reserved. 
@@ -31,7 +31,7 @@ def main():
                 data_process.edit_json_by_slug(slug, summary_content, return_status)
                 data_process.save_json()
             else:
-                print("所有总结已完成!")
+                print("文章已生成总结: " + post["title"])
         else:
             print("为文章生成总结: " + post['title'])
             summary_content = generate_summary(post.content)
