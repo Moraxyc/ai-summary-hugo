@@ -2,9 +2,9 @@
 Author: Moraxyc me@morax.icu
 Date: 2023-08-16 00:40:10
 LastEditors: Moraxyc me@morax.icu
-LastEditTime: 2023-08-16 04:41:22
+LastEditTime: 2023-08-16 11:50:15
 FilePath: /ai-summary-hugo/main.py
-Description: 
+Description: 脚本运行入口
 
 Copyright (c) 2023 by Moraxyc, All Rights Reserved. 
 '''
@@ -31,12 +31,12 @@ def main():
                 data_process.edit_json_by_slug(slug, summary_content, return_status)
                 data_process.save_json()
             else:
-                print("All summmaries have been generated! Exit...")
+                print("所有总结已完成!")
         else:
-            print("Generating summary for" + post['title'])
+            print("为文章生成总结: " + post['title'])
             summary_content = generate_summary(post.content)
             return_status = True if summary_content else False
-            if not return_status:print("Failed to generate summary for" + post['title'])
+            if not return_status:print("为文章生成总结失败: " + post['title'])
             new_summary = {
                 "title": post['title'],
                 "slug": slug,

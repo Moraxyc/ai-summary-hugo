@@ -2,9 +2,9 @@
 Author: Moraxyc me@morax.icu
 Date: 2023-08-16 02:32:59
 LastEditors: Moraxyc me@morax.icu
-LastEditTime: 2023-08-16 03:38:03
+LastEditTime: 2023-08-16 11:50:06
 FilePath: /ai-summary-hugo/requestSummary.py
-Description: 
+Description: 通过API向chatgpt请求文章总结
 
 Copyright (c) 2023 by Moraxyc, All Rights Reserved. 
 '''
@@ -26,4 +26,3 @@ def generate_summary(prompt):
     except openai.error.OpenAIError as e:
         print("OpenAI Error:", e)
         return None
-

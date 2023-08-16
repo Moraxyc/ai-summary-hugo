@@ -16,10 +16,6 @@
 
 安装依赖: `pip install -r requirements.txt`
 
-## 创建summary.json
-
-移动初始化`summary.json`到`data/summary`路径: `mv data ..`
-
 ## 配置api key
 
 输出OPENAI_API_KEY到环境变量: `export OPENAI_API_KEY="sk-xxxxxxxxxxxxxxxxxxx"`
