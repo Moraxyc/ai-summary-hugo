@@ -17,6 +17,10 @@ git submodule update --init --recursive
 ```
 ### 创建Action文件
 在博客根目录下将以下内容写入`.github/workflows/build.yml`
+
+由于CI运行时对文件的修改无法持久化，因为该配置将permisson修改为write并推送到main分支来同步修改。
+
+请注意，该配置可能不适用于您的情况，请检查现有结构进行修改后再使用
 ```yaml
 name: Build hugo site and publish
 
@@ -27,7 +31,7 @@ on:
       - main
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -40,6 +44,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
+          ref: ${{ github.head_ref }}
           submodules: 'true'
 
       - name: Setup python
@@ -57,6 +62,26 @@ jobs:
         run: |
           cd ai-summary-hugo
           python main.py
+          cd .. 
+          if [[ $(git status --porcelain) ]]; then
+            echo "SUMMARY_CHANGE=true" >> "$GITHUB_ENV"
+          else
+            echo "SUMMARY_CHANGE=false" >> "$GITHUB_ENV"
+          fi
+
+      - name: Commit files
+        if: env.SUMMARY_CHANGE == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add data/summary/summary.json
+          git commit -a -m "perf(summary): mod or add summary"
+
+      - name: Push changes
+        if: env.SUMMARY_CHANGE == 'true'
+        uses: ad-m/github-push-action@master
+        with:
+          branch: ${{ github.head_ref }}
 
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v2
