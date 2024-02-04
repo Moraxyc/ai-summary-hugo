@@ -11,7 +11,7 @@ idna==3.6
 iniconfig==2.0.0
 mock==5.1.0
 multidict==6.0.4
-openai==0.28.1
+openai==1.11.0
 packaging==23.2
 path==16.7.1
 path.py==12.5.0
