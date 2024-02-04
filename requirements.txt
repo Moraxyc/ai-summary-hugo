@@ -13,7 +13,7 @@ mock==5.1.0
 multidict==6.0.4
 openai==1.11.0
 packaging==23.2
-path==16.7.1
+path==16.10.0
 path.py==12.5.0
 pluggy==1.4.0
 pytest==8.0.0
