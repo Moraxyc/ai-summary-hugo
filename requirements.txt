@@ -23,6 +23,6 @@ PyYAML==6.0.1
 requests==2.31.0
 six==1.16.0
 termcolor==2.4.0
-tqdm==4.66.1
+tqdm==4.66.2
 urllib3==2.2.0
 yarl==1.9.4
