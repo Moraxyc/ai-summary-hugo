@@ -16,7 +16,7 @@ packaging==23.2
 path==16.10.0
 path.py==12.5.0
 pluggy==1.4.0
-pytest==8.0.0
+pytest==8.0.1
 pytest-shutil==1.7.0
 python-frontmatter==1.1.0
 PyYAML==6.0.1
