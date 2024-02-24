@@ -11,8 +11,8 @@ Copyright (c) 2023 by Moraxyc, All Rights Reserved.
 import os
 import sys
 import frontmatter
-from dataProcess import dataProcess
-from requestSummary import generate_summary
+from .dataProcess import dataProcess
+from .requestSummary import generate_summary
 
 def main():
     data_process = dataProcess("../data/summary/summary.json")
