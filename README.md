@@ -128,7 +128,9 @@ jobs:
 请创建`OPENAI_API_KEY`的secret并填入你的openai密钥
 
 至此，推送到远端的仓库将启用action自动部署生成summary文件并推送到Cloudflare Pages，可以有效解决openai的api访问限制问题。Github Pages部署可参照其文档，自行替换workflow中的`cloudflare_deploy`这个job
+
 ## 独立运行
+该方式需要安装poetry，详见[poetry文档](https://python-poetry.org/docs/#installation)
 ### 拉取
 
 在hugo博客根目录下执行: `git clone https://github.com/Moraxyc/ai-summary-hugo.git`
@@ -137,9 +139,7 @@ jobs:
 
 ### 配置环境
 
-创建虚拟环境并激活: `python -m venv .venv && source .venv/bin/activate`
-
-安装依赖: `pip install -r requirements.txt`
+安装依赖: `poetry install`
 
 ### 配置api key
 
@@ -147,7 +147,7 @@ jobs:
 
 ### 运行
 
-运行python脚本: `python main.py`
+运行python脚本: `poetry run generate`
 
 依照网络环境，等待时间不一
 
