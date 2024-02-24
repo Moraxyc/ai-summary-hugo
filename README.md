@@ -4,9 +4,10 @@
 
 该python脚本作用为辅助生成summary.json
 
-有两种运行方式可供选择
+有三种运行方式可供选择
   - [CI集成](#CI集成)
   - [独立运行](#独立运行)
+  - [Nix](#Nix)
 
 ## CI集成
 该集成以Cloudflare Pages为例
@@ -48,20 +49,18 @@ jobs:
           submodules: 'true'
 
       - name: Setup python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11.4'
-          cache: 'pip'
+          python-version: '3.11'
 
-      - name: Install pip dependencies 
+      - name: Install poetry
+        uses: abatilo/actions-poetry@v3
+
+      - name: Run script
         run: |
           cd ai-summary-hugo
-          pip install -r requirements.txt  
-
-      - name: Run python script
-        run: |
-          cd ai-summary-hugo
-          python main.py
+          poetry install
+          poetry run generate
           cd .. 
           if [[ $(git status --porcelain) ]]; then
             echo "SUMMARY_CHANGE=true" >> "$GITHUB_ENV"
@@ -152,3 +151,22 @@ jobs:
 
 依照网络环境，等待时间不一
 
+## Nix
+
+该方式使用devshell创建依赖环境
+
+### direnv
+
+```
+cd ai-summary-hugo
+direnv allow
+python -m app
+```
+
+### nix develop
+
+```
+cd ai-summary-hugo
+nix develop
+python -m app
+```
