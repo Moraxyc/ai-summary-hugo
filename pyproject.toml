@@ -2,13 +2,13 @@
 name = "app"
 version = "0.1.0"
 description = ""
-authors = ["Moraxyc <me@morax.icu>"]
-license = "GPL2"
+authors = ["Moraxyc <i@qaq.li>"]
+license = "GPL3"
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-openai = "^1.12.0"
+openai = "^1.28.0"
 python-frontmatter = "^1.1.0"
 
 [build-system]

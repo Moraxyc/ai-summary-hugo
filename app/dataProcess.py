@@ -1,13 +1,3 @@
-'''
-Author: Moraxyc me@morax.icu
-Date: 2023-08-16 01:55:38
-LastEditors: Moraxyc me@morax.icu
-LastEditTime: 2023-08-16 11:50:00
-FilePath: /ai-summary-hugo/dataProcess.py
-Description: 处理summary.json数据
-
-Copyright (c) 2023 by Moraxyc, All Rights Reserved. 
-'''
 import json
 import os
 import shutil
@@ -25,16 +15,15 @@ class dataProcess:
 
     def load_json(self):
         if os.path.exists(self.file_path):
-            with open(self.file_path, 'r') as json_file:
+            with open(self.file_path, "r") as json_file:
                 data = json.load(json_file)
             return data if self.validate_json_structure else False
         else:
             try:
                 print("summary.json不存在, 初始化中")
-                os.makedirs(self.file_path.rstrip(
-                    'summary.json'), exist_ok=True)
+                os.makedirs(self.file_path.rstrip("summary.json"), exist_ok=True)
                 shutil.copy("./summary.json", self.file_path)
-                with open(self.file_path, 'r') as json_file:
+                with open(self.file_path, "r") as json_file:
                     data = json.load(json_file)
                 return data
             except FileNotFoundError:
@@ -83,7 +72,7 @@ class dataProcess:
         return None
 
     def save_json(self):
-        with open(self.file_path, 'w') as json_file:
+        with open(self.file_path, "w") as json_file:
             json.dump(self.data, json_file, indent=4, ensure_ascii=False)
 
     def add_new_summary(self, new_summary):
