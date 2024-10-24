@@ -26,6 +26,8 @@
       systems = [
         "x86_64-linux"
         "aarch64-linux"
+        "x86_64-darwin"
+        "aarch64-darwin"
       ];
       debug = false;
 
@@ -69,9 +71,7 @@
                     _final: prev: {
                       openai = prev.openai.overridePythonAttrs (_old: {
                         buildInputs = _old.buildInputs ++ (with pkgs.python312Packages; [ hatch-fancy-pypi-readme ]);
-                      }
-
-                      );
+                      });
                     }
 
                   );
@@ -80,7 +80,7 @@
               with pkgs;
               [
                 poetry
-                pythonEnv
+                #pythonEnv
               ];
           };
         };
