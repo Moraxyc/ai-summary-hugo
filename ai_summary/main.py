@@ -6,7 +6,7 @@ from .requestSummary import generate_summary
 
 
 def main():
-    data_process = dataProcess("../data/summary/summary.json")
+    data_process = dataProcess("../assets/data/summary/summary.json")
     posts_path = get_posts_path()
 
     for post_path in posts_path:

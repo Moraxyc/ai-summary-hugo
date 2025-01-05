@@ -1,27 +1,35 @@
-# AI摘要文件生成
+# AI 摘要文件生成
 
-灵感来源于[大大的小蜗牛](https://eallion.com)的博文[博客AI摘要及优化](https://eallion.com/ai-summary/)
+灵感来源于[大大的小蜗牛](https://eallion.com)的博文[博客 AI 摘要及优化](https://eallion.com/ai-summary/)
 
-该python脚本作用为辅助生成summary.json
+该 python 脚本作用为辅助生成 summary.json
 
-有三种运行方式可供选择
-  - [CI集成](#CI集成)
-  - [独立运行](#独立运行)
-  - [Nix](#Nix)
+有两种运行方式可供选择
 
-## CI集成
-该集成以Cloudflare Pages为例
+- [CI 集成](#CI集成)
+- [Nix](#Nix)
+
+请注意，默认的生成路径为 assets/data/summary/summary.json
+
+## CI 集成
+
+该集成以 Cloudflare Pages 为例
+
 ### 添加子模块
+
 ```bash
 git submodule add https://github.com/Moraxyc/ai-summary-hugo
 git submodule update --init --recursive
 ```
-### 创建Action文件
+
+### 创建 Action 文件
+
 在博客根目录下将以下内容写入`.github/workflows/build.yml`
 
-由于CI运行时对文件的修改无法持久化，因为该配置将permisson修改为write并推送到main分支来同步修改。
+由于 CI 运行时对文件的修改无法持久化，因为该配置将 permisson 修改为 write 并推送到 main 分支来同步修改。
 
 请注意，该配置可能不适用于您的情况，请检查现有结构进行修改后再使用
+
 ```yaml
 name: Build hugo site and publish
 
@@ -46,22 +54,21 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
-          submodules: 'true'
+          submodules: "true"
 
-      - name: Setup python
-        uses: actions/setup-python@v5
+      - name: Install nix
+        uses: cachix/install-nix-action@v30
         with:
-          python-version: '3.11'
-
-      - name: Install poetry
-        uses: abatilo/actions-poetry@v3
+          nix_path: nixpkgs=channel:nixos-unstable
+          extra_nix_config: |
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=
+            substituters = https://cache.nixos.org/ https://cache.garnix.io
 
       - name: Run script
         run: |
-          cd ai-summary-hugo
-          poetry install
-          poetry run generate
-          cd .. 
+          pushd ai-summary-hugo
+          nix run .#ai-summary
+          popd
           if [[ $(git status --porcelain) ]]; then
             echo "SUMMARY_CHANGE=true" >> "$GITHUB_ENV"
           else
@@ -73,7 +80,7 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add data/summary/summary.json
+          git add assets/data/summary/summary.json
           git commit -a -m "perf(summary): mod or add summary"
 
       - name: Push changes
@@ -85,10 +92,10 @@ jobs:
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v2
         with:
-          hugo-version: 'latest'
+          hugo-version: "latest"
           extended: true
 
-      - name: Build site 
+      - name: Build site
         run: hugo
 
       - name: Upload artifact
@@ -119,54 +126,25 @@ jobs:
           directory: public
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 ```
-使用Github Action部署Cloudflare Pages时，请完成以下步骤:
-  - 关闭Cloudflare的自动部署
-  - Cloudflare中创建API Token，作用区域包含Cloudflare Pages
-  - 在博客的repo中创建`CLOUDFLARE_API_TOKEN`和`CLOUDFLARE_ACCOUNT_ID`的secrets，分别对应Cloudflare API Token和Cloudflare账户ID
-  - 将workflow文件最后的`projectName`更改为你的pages项目名
 
-请创建`OPENAI_API_KEY`的secret并填入你的openai密钥
+使用 Github Action 部署 Cloudflare Pages 时，请完成以下步骤:
 
-至此，推送到远端的仓库将启用action自动部署生成summary文件并推送到Cloudflare Pages，可以有效解决openai的api访问限制问题。Github Pages部署可参照其文档，自行替换workflow中的`cloudflare_deploy`这个job
+- 关闭 Cloudflare 的自动部署
+- Cloudflare 中创建 API Token，作用区域包含 Cloudflare Pages
+- 在博客的 repo 中创建`CLOUDFLARE_API_TOKEN`和`CLOUDFLARE_ACCOUNT_ID`的 secrets，分别对应 Cloudflare API Token 和 Cloudflare 账户 ID
+- 将 workflow 文件最后的`projectName`更改为你的 pages 项目名
 
-## 独立运行
-该方式需要安装poetry，详见[poetry文档](https://python-poetry.org/docs/#installation)
-### 拉取
+请创建`OPENAI_API_KEY`的 secret 并填入你的 openai 密钥
 
-在hugo博客根目录下执行: `git clone https://github.com/Moraxyc/ai-summary-hugo.git`
-
-进入该脚本目录: `cd ai-summary-hugo`
-
-### 配置环境
-
-安装依赖: `poetry install`
-
-### 配置api key
-
-输出OPENAI_API_KEY到环境变量: `export OPENAI_API_KEY="sk-xxxxxxxxxxxxxxxxxxx"`
-
-### 运行
-
-运行python脚本: `poetry run generate`
-
-依照网络环境，等待时间不一
+至此，推送到远端的仓库将启用 action 自动部署生成 summary 文件并推送到 Cloudflare Pages，可以有效解决 openai 的 api 访问限制问题。Github Pages 部署可参照其文档，自行替换 workflow 中的`cloudflare_deploy`这个 job
 
 ## Nix
 
-该方式使用devshell创建依赖环境
-
-### direnv
+该方式使用 nix 构建包
 
 ```
 cd ai-summary-hugo
-direnv allow
-python -m app
+nix run .#ai-summary
 ```
 
-### nix develop
-
-```
-cd ai-summary-hugo
-nix develop
-python -m app
-```
+Copyright (C) 2023 Moraxyc

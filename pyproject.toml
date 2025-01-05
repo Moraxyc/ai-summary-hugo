@@ -1,20 +1,24 @@
-[tool.poetry]
-name = "app"
-version = "0.1.0"
-description = ""
-authors = ["Moraxyc <i@qaq.li>"]
-license = "GPL3"
-readme = "README.md"
-
-[tool.poetry.dependencies]
-python = "^3.11"
-openai = "^1.28.0"
-python-frontmatter = "^1.1.0"
-
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
 
-[tool.poetry.scripts]
-generate = "app.main:main"
-poetry = "poetry.console.application:main"
+[project]
+name = "ai-summary"
+version = "0.1.0"
+description = "A simple program to generate summary.json"
+readme = "README.md"
+license = {text = "GPL3Only"}
+authors = [
+    {name = "Moraxyc Xu", email = "i@qaq.li"},
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "openai",
+    'python-frontmatter',
+]
+
+[project.scripts]
+ai-summary = "ai_summary.main:main"
+
