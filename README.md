@@ -9,7 +9,9 @@
 - [CI 集成](#CI集成)
 - [Nix](#Nix)
 
-请注意，默认的生成路径为 assets/data/summary/summary.json
+请注意，默认的生成路径为 ../assets/data/summary/summary.json
+
+使用`ai-summary --help`来获取更多选项。
 
 ## CI 集成
 
@@ -67,7 +69,7 @@ jobs:
       - name: Run script
         run: |
           pushd ai-summary-hugo
-          nix run .#ai-summary
+          nix run .#ai-summary -- --target .
           popd
           if [[ $(git status --porcelain) ]]; then
             echo "SUMMARY_CHANGE=true" >> "$GITHUB_ENV"
@@ -143,8 +145,7 @@ jobs:
 该方式使用 nix 构建包
 
 ```
-cd ai-summary-hugo
-nix run .#ai-summary
+nix run .#ai-summary -- --target .
 ```
 
 Copyright (C) 2023 Moraxyc

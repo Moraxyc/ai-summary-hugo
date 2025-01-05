@@ -20,5 +20,5 @@ dependencies = [
 ]
 
 [project.scripts]
-ai-summary = "ai_summary.main:main"
+ai-summary = "ai_summary.main:entry"
 
