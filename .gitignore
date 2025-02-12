@@ -1,7 +1,6 @@
 /.venv
 /.vscode
 /**/__pycache__
-/.direnv
 .pre-commit-config.yaml
 
 # Byte-compiled / optimized / DLL files
@@ -175,3 +174,7 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Nix
+result*
+/.direnv
