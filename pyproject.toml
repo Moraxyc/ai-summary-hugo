@@ -1,24 +1,40 @@
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "ai-summary"
 version = "0.1.0"
-description = "A simple program to generate summary.json"
+description = "Generate summary.json for Hugo sites with LLM-generated article summaries."
 readme = "README.md"
-license = {text = "GPL3Only"}
+requires-python = ">=3.11"
+license = "GPL-3.0-only"
 authors = [
-    {name = "Moraxyc Xu", email = "i@qaq.li"},
+  { name = "Moraxyc Xu", email = "i@qaq.li" },
 ]
 classifiers = [
-    "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
-    "openai",
-    'python-frontmatter',
+  "openai>=1.50",
+  "python-frontmatter>=1.1",
 ]
 
 [project.scripts]
 ai-summary = "ai_summary.main:entry"
 
+[dependency-groups]
+dev = ["ruff>=0.6"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.format]
+quote-style = "double"

@@ -11,7 +11,8 @@ class DataProcess:
         self.data = self.load_json()
         if not self.data:
             print(
-                "File structure is incorrect! Please delete summary.json or adjust the structure!"
+                "File structure is incorrect! Please delete summary.json"
+                " or adjust the structure!"
             )
             sys.exit(0)
         self.slug_cache = {}
@@ -19,10 +20,10 @@ class DataProcess:
     def load_json(self):
         """Load the JSON file and validate its structure, repair it if necessary"""
         if os.path.exists(self.file_path):
-            with open(self.file_path, "r") as json_file:
+            with open(self.file_path) as json_file:
                 data = json.load(json_file)
             if not self.validate_json_structure(data):
-                print(f"Invalid JSON structure, attempting to fix structure...")
+                print("Invalid JSON structure, attempting to fix structure...")
                 # Attempt to fix the structure when invalid
                 if not self.fix_json_structure(data):
                     print("Structure deviation is too large to fix, program exiting")
@@ -32,15 +33,15 @@ class DataProcess:
         else:
             try:
                 print("summary.json does not exist, initializing...")
-                os.makedirs(self.file_path.rstrip("summary.json"), exist_ok=True)
+                os.makedirs(os.path.dirname(self.file_path), exist_ok=True)
                 shutil.copy(
                     Path(__file__).resolve().parent / "summary.json", self.file_path
                 )
-                with open(self.file_path, "r") as json_file:
+                with open(self.file_path) as json_file:
                     data = json.load(json_file)
                 if not self.validate_json_structure(data):
                     print(
-                        f"Initialized summary.json has an invalid structure, fixing..."
+                        "Initialized summary.json has an invalid structure, fixing..."
                     )
                     if not self.fix_json_structure(data):
                         print(
@@ -71,11 +72,12 @@ class DataProcess:
         return False
 
     def fix_json_structure(self, data):
-        """Attempt to fix the JSON structure by filling missing fields with default values"""
+        """Attempt to fix the JSON structure with default values for missing fields"""
         # Check if the root structure is a dictionary
         if not isinstance(data, dict):
             print(
-                "Root structure is not a dictionary, structure deviation is too large to fix"
+                "Root structure is not a dictionary, structure deviation is"
+                " too large to fix"
             )
             return False
         if "summaries" not in data or not isinstance(data["summaries"], list):
@@ -86,11 +88,12 @@ class DataProcess:
         for summary in data["summaries"]:
             if not isinstance(summary, dict):
                 print(
-                    f"Invalid summary item found: {summary}, skipping repair for this item"
+                    f"Invalid summary item found: {summary}, skipping repair"
+                    " for this item"
                 )
                 continue  # Skip invalid summary items
 
-            # Fill missing fields with default values, but avoid overwriting existing fields
+            # Fill missing fields with default values (do not overwrite existing ones)
             if "title" not in summary:
                 summary["title"] = "Untitled"
             if "slug" not in summary:

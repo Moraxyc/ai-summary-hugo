@@ -2,35 +2,100 @@
 
 灵感来源于[大大的小蜗牛](https://eallion.com)的博文[博客 AI 摘要及优化](https://eallion.com/ai-summary/)
 
-该 python 脚本作用为辅助生成 summary.json
+该 Python 脚本用于辅助生成 `summary.json`，有以下几种运行方式：
 
-有两种运行方式可供选择
+- [uv（推荐）](#uv)
+- [Nix](#nix)
+- [CI 集成](#ci-集成)
 
-- [CI 集成](#CI集成)
-- [Nix](#Nix)
+> 默认生成路径为 `../assets/data/summary/summary.json`，使用 `ai-summary --help` 查看全部选项。
 
-请注意，默认的生成路径为 ../assets/data/summary/summary.json
+## 开发
 
-使用`ai-summary --help`来获取更多选项。
+本项目使用 [uv](https://docs.astral.sh/uv/) 管理依赖、[Nix flake](https://nixos.wiki/wiki/Flakes) 提供 dev shell 与 pre-commit hooks、[Renovate](https://docs.renovatebot.com/) 自动化升级依赖。
+
+```bash
+# 安装依赖（生成 .venv 与 uv.lock）
+uv sync
+
+# 运行
+uv run ai-summary --target .
+
+# lint / format
+uv run ruff check .
+uv run ruff format .
+```
+
+## uv
+
+```bash
+uvx --from git+https://github.com/Moraxyc/ai-summary-hugo ai-summary --target .
+```
+
+或在仓库内：
+
+```bash
+uv sync
+uv run ai-summary --target .
+```
+
+## Nix
+
+```bash
+nix run github:Moraxyc/ai-summary-hugo -- --target .
+```
+
+在仓库内：
+
+```bash
+nix run .#ai-summary -- --target .
+```
+
+## API 端点配置
+
+默认调用 OpenAI 官方接口。如需使用 OpenAI 兼容的第三方服务（如 DeepSeek、Moonshot、本地模型等），可通过 `--base-url` 指定 API 端点：
+
+```bash
+uv run ai-summary --target . --base-url https://api.deepseek.com/v1 --model deepseek-chat
+```
+
+也可通过环境变量 `OPENAI_BASE_URL` 设置，命令行参数优先级更高：
+
+```bash
+export OPENAI_BASE_URL=https://api.deepseek.com/v1
+export OPENAI_API_KEY=sk-xxxxx
+uv run ai-summary --target .
+```
+
+> 注意：切换端点后请同时通过 `--model` 指定该服务支持的模型名称。
+
+## 自定义提示词
+
+默认使用内置的提示词生成摘要：
+
+- 中文：`请在100字内用中文总结以下文章的核心内容: `
+- 英文：`Please summarize the main content of the article within 100 words: `
+- 系统提示词：`You are a concise summarizer. Summarize the article accurately and briefly.`
+
+如需自定义，使用 `--prompt` 覆盖用户提示词前缀（会拼接到正文之前），使用 `--system-prompt` 覆盖系统提示词：
+
+```bash
+uv run ai-summary --target . \
+  --prompt "用 50 字以内的 Markdown 列表总结文章要点：" \
+  --system-prompt "你是一位资深编辑，擅长提炼文章结构。"
+```
+
+提示词较长或包含换行时，可将内容写入文件并用 `@` 前缀引用：
+
+```bash
+uv run ai-summary --target . --prompt @prompts/summary.txt
+```
+
+> 当同时指定 `--prompt` 与 `--language` 时，`--prompt` 优先；`--language` 仅作为未提供自定义提示词时的内置默认值。
 
 ## CI 集成
 
-该集成以 Cloudflare Pages 为例
-
-### 添加子模块
-
-```bash
-git submodule add https://github.com/Moraxyc/ai-summary-hugo
-git submodule update --init --recursive
-```
-
-### 创建 Action 文件
-
-在博客根目录下将以下内容写入`.github/workflows/build.yml`
-
-由于 CI 运行时对文件的修改无法持久化，因为该配置将 permisson 修改为 write 并推送到 main 分支来同步修改。
-
-请注意，该配置可能不适用于您的情况，请检查现有结构进行修改后再使用
+以 Cloudflare Pages 为例。CI 运行时对文件的修改无法持久化，因此下方配置将 `permissions` 设为 `write`，并推送到 `main` 分支同步修改。请根据自身仓库结构调整后再使用。
 
 ```yaml
 name: Build hugo site and publish
@@ -38,14 +103,10 @@ name: Build hugo site and publish
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
+    branches: [main]
 
 permissions:
   contents: write
-
-env:
-  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
 jobs:
   build:
@@ -53,46 +114,38 @@ jobs:
     name: Build Public
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v7
         with:
-          ref: ${{ github.head_ref }}
           submodules: "true"
 
-      - name: Install nix
-        uses: cachix/install-nix-action@v30
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v8
         with:
-          nix_path: nixpkgs=channel:nixos-unstable
-          extra_nix_config: |
-            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= cache.garnix.io:CTFPyKSLcx5RMJKfLo5EEPUObbA78b0YQ2DTCJXqr9g=
-            substituters = https://cache.nixos.org/ https://cache.garnix.io
+          enable-cache: true
 
-      - name: Run script
+      - name: Generate summaries
+        working-directory: ai-summary-hugo
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          pushd ai-summary-hugo
-          nix run .#ai-summary -- --target .
-          popd
+          uv sync
+          uv run ai-summary --target ..
+
+      - name: Commit summary changes
+        run: |
           if [[ $(git status --porcelain) ]]; then
-            echo "SUMMARY_CHANGE=true" >> "$GITHUB_ENV"
-          else
-            echo "SUMMARY_CHANGE=false" >> "$GITHUB_ENV"
+            git config --local user.email "github-actions[bot]@users.noreply.github.com"
+            git config --local user.name "github-actions[bot]"
+            git add assets/data/summary/summary.json
+            git commit -m "perf(summary): mod or add summary"
           fi
 
-      - name: Commit files
-        if: env.SUMMARY_CHANGE == 'true'
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add assets/data/summary/summary.json
-          git commit -a -m "perf(summary): mod or add summary"
-
       - name: Push changes
-        if: env.SUMMARY_CHANGE == 'true'
-        uses: ad-m/github-push-action@master
-        with:
-          branch: ${{ github.head_ref }}
+        if: success()
+        uses: ad-m/github-push-action@v1
 
       - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v2
+        uses: peaceiris/actions-hugo@v3
         with:
           hugo-version: "latest"
           extended: true
@@ -101,7 +154,7 @@ jobs:
         run: hugo
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v7
         with:
           name: public
           path: public/
@@ -114,38 +167,27 @@ jobs:
       deployments: write
     name: Deploy to Cloudflare Pages
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v8
         with:
           name: public
           path: public
 
       - name: Publish to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
+        uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: YOUR_PROJECT_NAME
-          directory: public
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          command: pages deploy public --project-name=YOUR_PROJECT_NAME
 ```
 
-使用 Github Action 部署 Cloudflare Pages 时，请完成以下步骤:
+使用 GitHub Action 部署 Cloudflare Pages 时：
 
 - 关闭 Cloudflare 的自动部署
-- Cloudflare 中创建 API Token，作用区域包含 Cloudflare Pages
-- 在博客的 repo 中创建`CLOUDFLARE_API_TOKEN`和`CLOUDFLARE_ACCOUNT_ID`的 secrets，分别对应 Cloudflare API Token 和 Cloudflare 账户 ID
-- 将 workflow 文件最后的`projectName`更改为你的 pages 项目名
+- 在 Cloudflare 中创建 API Token，作用区域包含 Cloudflare Pages
+- 在博客仓库中创建 `CLOUDFLARE_API_TOKEN` 与 `CLOUDFLARE_ACCOUNT_ID` secrets
+ - 将 workflow 末尾的 `--project-name=YOUR_PROJECT_NAME` 改为你的 Pages 项目名
+- 创建 `OPENAI_API_KEY` secret 并填入 OpenAI 密钥
 
-请创建`OPENAI_API_KEY`的 secret 并填入你的 openai 密钥
-
-至此，推送到远端的仓库将启用 action 自动部署生成 summary 文件并推送到 Cloudflare Pages，可以有效解决 openai 的 api 访问限制问题。Github Pages 部署可参照其文档，自行替换 workflow 中的`cloudflare_deploy`这个 job
-
-## Nix
-
-该方式使用 nix 构建包
-
-```
-nix run .#ai-summary -- --target .
-```
+至此，推送到远端的仓库会通过 Action 自动生成 summary 文件并部署到 Cloudflare Pages，可有效规避 OpenAI API 的访问限制。GitHub Pages 部署可参考其文档自行替换 `cloudflare_deploy` job。
 
 Copyright (C) 2023 Moraxyc

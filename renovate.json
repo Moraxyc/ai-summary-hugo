@@ -1,6 +1,36 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base"
+    "config:recommended",
+    ":dependencyDashboard",
+    "replacements:all",
+    "workarounds:all"
+  ],
+  "timezone": "Asia/Shanghai",
+  "schedule": ["before 6am"],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on monday"]
+  },
+  "packageRules": [
+    {
+      "description": "Group dev tooling updates and auto-merge patch/minor",
+      "matchDepTypes": ["dev-dependencies", "dependency-groups", "development"],
+      "matchUpdateTypes": ["patch", "minor"],
+      "groupName": "dev dependencies",
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Auto-merge lockfile maintenance",
+      "matchUpdateTypes": ["lockFileMaintenance"],
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Group OpenAI SDK updates (manual review, API surface sensitive)",
+      "matchPackageNames": ["openai"],
+      "groupName": "openai"
+    }
   ]
 }
