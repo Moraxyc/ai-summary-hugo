@@ -47,15 +47,21 @@ def generate_summary(
 ):
     client = get_client()
     try:
+        # No max_tokens: reasoning models (e.g. DeepSeek thinking mode) count
+        # reasoning tokens against it and would return an empty answer.
         response = client.chat.completions.create(
             model=model_name,
             messages=[
                 {"role": "system", "content": _system_prompt},
                 {"role": "user", "content": prompt_prefix + content},
             ],
-            max_tokens=150,
         )
-        return response.choices[0].message.content.strip()
+        choice = response.choices[0]
+        content = (choice.message.content or "").strip()
+        if not content:
+            print(f"API returned no summary, finish_reason: {choice.finish_reason}")
+            return None
+        return content
     except APIConnectionError as e:
         print("The server could not be reached. Please check your network connection.")
         print(e.__cause__)
@@ -63,7 +69,7 @@ def generate_summary(
         print("Rate limit exceeded (status code 429). Please wait before retrying.")
     except APIStatusError as e:
         print(f"API returned a non-200 status code: {e.status_code}")
-        print(f"Response: {e.response}")
+        print(f"Response: {e.message}")
     except Exception as e:
         print(f"An error occurred: {e}")
 
