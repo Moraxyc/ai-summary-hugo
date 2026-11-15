@@ -4,8 +4,8 @@ import sys
 
 import frontmatter
 
-from .dataProcess import DataProcess
-from .requestSummary import (
+from .data_process import DataProcess
+from .request_summary import (
     configure_base_url,
     configure_system_prompt,
     generate_summary,

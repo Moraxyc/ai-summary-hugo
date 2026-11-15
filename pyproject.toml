@@ -26,9 +26,6 @@ dependencies = [
 [project.scripts]
 ai-summary = "ai_summary.main:entry"
 
-[tool.uv.build-backend]
-module-root = ""
-
 [dependency-groups]
 dev = ["ruff>=0.6"]
 
