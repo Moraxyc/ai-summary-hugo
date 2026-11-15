@@ -14,8 +14,10 @@
 
 本项目使用 [uv](https://docs.astral.sh/uv/) 管理依赖、[Nix flake](https://nixos.wiki/wiki/Flakes) 提供 dev shell 与 pre-commit hooks、[Renovate](https://docs.renovatebot.com/) 自动化升级依赖。
 
+源码位于 `src/ai_summary/`。
+
 ```bash
-# 安装依赖（生成 .venv 与 uv.lock）
+# 安装依赖（按 uv.lock 生成 .venv）
 uv sync
 
 # 运行
@@ -24,6 +26,17 @@ uv run ai-summary --target .
 # lint / format
 uv run ruff check .
 uv run ruff format .
+```
+
+使用 Nix 时，可通过 `nix develop`（或 direnv）进入 dev shell，其中提供 uv、ruff 等工具并自动安装 pre-commit hooks。NixOS 无法直接运行 PyPI 上的 ruff 二进制，请使用 dev shell 中的 ruff：
+
+```bash
+nix develop
+ruff check .
+ruff format .
+
+# 运行全部检查（与 CI 一致）
+nix flake check
 ```
 
 ## uv
@@ -119,7 +132,7 @@ jobs:
           submodules: "true"
 
       - name: Setup uv
-        uses: astral-sh/setup-uv@v8
+        uses: astral-sh/setup-uv@v10
         with:
           enable-cache: true
 
@@ -185,7 +198,7 @@ jobs:
 - 关闭 Cloudflare 的自动部署
 - 在 Cloudflare 中创建 API Token，作用区域包含 Cloudflare Pages
 - 在博客仓库中创建 `CLOUDFLARE_API_TOKEN` 与 `CLOUDFLARE_ACCOUNT_ID` secrets
- - 将 workflow 末尾的 `--project-name=YOUR_PROJECT_NAME` 改为你的 Pages 项目名
+- 将 workflow 末尾的 `--project-name=YOUR_PROJECT_NAME` 改为你的 Pages 项目名
 - 创建 `OPENAI_API_KEY` secret 并填入 OpenAI 密钥
 
 至此，推送到远端的仓库会通过 Action 自动生成 summary 文件并部署到 Cloudflare Pages，可有效规避 OpenAI API 的访问限制。GitHub Pages 部署可参考其文档自行替换 `cloudflare_deploy` job。
