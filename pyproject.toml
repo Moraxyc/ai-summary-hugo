@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=77"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build>=0.13,<0.14"]
+build-backend = "uv_build"
 
 [project]
 name = "ai-summary"
@@ -25,6 +25,9 @@ dependencies = [
 
 [project.scripts]
 ai-summary = "ai_summary.main:entry"
+
+[tool.uv.build-backend]
+module-root = ""
 
 [dependency-groups]
 dev = ["ruff>=0.6"]
