@@ -102,7 +102,8 @@
             name = "ai-summary-dev";
             packages = [
               pkgs.uv
-            ];
+            ]
+            ++ config.checks.pre-commit-check.enabledPackages;
             inputsFrom = [ config.checks.pre-commit-check ];
           };
         };
