@@ -1,8 +1,6 @@
 import json
 import os
-import shutil
 import sys
-from pathlib import Path
 
 
 class DataProcess:
@@ -30,30 +28,15 @@ class DataProcess:
                     sys.exit(1)
                 return self.data  # Return repaired data
             return data
-        else:
-            try:
-                print("summary.json does not exist, initializing...")
-                os.makedirs(os.path.dirname(self.file_path), exist_ok=True)
-                shutil.copy(
-                    Path(__file__).resolve().parent / "summary.json", self.file_path
-                )
-                with open(self.file_path) as json_file:
-                    data = json.load(json_file)
-                if not self.validate_json_structure(data):
-                    print(
-                        "Initialized summary.json has an invalid structure, fixing..."
-                    )
-                    if not self.fix_json_structure(data):
-                        print(
-                            "Structure deviation is too large to fix, program exiting"
-                        )
-                        sys.exit(1)
-                return self.data  # Return repaired data
-            except FileNotFoundError:
-                print("Failed to initialize summary.json, source file does not exist")
-            except OSError as e:
-                print(f"Error occurred while initializing summary.json file: {e}")
-        return None
+        print("summary.json does not exist, initializing...")
+        self.data = {"summaries": []}
+        try:
+            os.makedirs(os.path.dirname(self.file_path), exist_ok=True)
+            self.save_json()
+        except OSError as e:
+            print(f"Error occurred while initializing summary.json file: {e}")
+            sys.exit(1)
+        return self.data
 
     def validate_json_structure(self, data):
         """Validate if the JSON structure is as expected"""
