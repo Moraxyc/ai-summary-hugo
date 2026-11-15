@@ -113,7 +113,9 @@ def get_posts_path(target_path):
 
 
 def entry():
-    parser = argparse.ArgumentParser(description="Generate article summaries.")
+    parser = argparse.ArgumentParser(
+        prog="ai-summary", description="Generate article summaries."
+    )
     parser.add_argument(
         "--target",
         type=str,
